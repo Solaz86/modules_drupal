@@ -1,0 +1,5 @@
+name = Andres
+description = Nuevo modulo de prueba
+version = 1.0.0
+core = 7.x
+dependencies[] = carlos_form

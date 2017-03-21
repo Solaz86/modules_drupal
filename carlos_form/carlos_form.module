@@ -1,0 +1,308 @@
+<?php
+
+
+/**
+ * Implements hook_help().   modulo de ayuda se tiene que activar desde la pagina
+ */
+function carlos_form_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#carlos_form':
+      return '<p>' . t('Hello world') . '</p>';
+  }
+}
+
+/**
+ * Implements hook_permission().
+ */
+function carlos_form_permission() {
+  return array(
+    'see carlos form' =>  array(
+       'title' => t('See carlos form'),
+       'description' => t('See the custom form by my module.'),
+    )
+  );
+}
+
+
+
+
+/**
+ * Implements hook_menu().  declaro rutas
+ */
+function carlos_form_menu() {
+  $items['carlos/formulario1'] = array(   // defino el url
+    'title' => t('Form1'),  // titulo del formulario
+    'page callback' => 'drupal_get_form',   // funcion que renderiza la url
+    'page arguments' => array('carlos_form_form'),   //pasar argumentos a  la funcion q c renderizara, en este caso el formulario
+    'access arguments' => array('see carlos form'),  //pasar argumentos a la funcion que da los permisos declarado en carlos_form_permission
+     // 'access callback' => true,
+    'type' => MENU_CALLBACK,  // tipo del item del menu
+  );
+
+  $items['carlos/pagina-custom'] = array(   //nuevo url
+    'title' => t('Users'),
+    'page callback' => 'carlos_pagina_custom',
+    'access arguments' => array('see carlos form'),
+    'type' => MENU_NORMAL_ITEM
+  );
+
+  return $items;  // retorno el array items
+}
+
+
+/**
+ * Funcion que renderiza pagina de usuarios
+ *
+ * @return     array  Render
+ */
+function carlos_pagina_custom() {    // la funcion que va a renderizar el url /pagina carlos/pagina-custom
+  $usersForm = drupal_get_form('carlos_form_form'); //funcion de drupal para crear un formulario en la el argumento es el form id
+
+  $return['wrapper'] = [    //  array $return en el indice wraper(empaquetador)
+    '#prefix' => '<div class="wrapper-form-content">',    //con el #prefix #sufix form se usa cualquier etiqueta html en el que se mete el formulario que redondee algo
+    '#suffix' => '</div>',
+    'form' => [
+      '#markup' => drupal_render($usersForm)   // en el #markup ponemos la funcion drupal_render para renderizar el formulario $usersForm
+    ]
+  ];
+
+  // $results = db_query('SELECT * FROM usuarios')->fetchAll();
+  $results = db_select('usuarios', 'us')
+    ->fields('us') // traer todos los campos de la base de datos
+    ->execute()->fetchAll();
+  // while ($node = db_fetch_object(stmt))
+
+  $rows = array();  // estas son las filas, aca se define la variable como un array, en caso contratio va estar indefinida
+  foreach ($results as $key => $user) {   //results es el array que contiene el indice key y los value user
+    $rows[] = array( // 
+      $user->id,
+      $user->name,
+      $user->lastname,
+      $user->age,
+      $user->opsex,
+      l(t('Edit'), '/carlos/pagina-custom', ['query' => ['user_id' => dechex($user->id), 'user_name' => $user->name]]) // se hace una fila con titulo  que contiene el enlace edit que lleve al url de la pagina-custom
+    ); 
+  }
+
+  $header = array('Id', t('Name'), t('Lastname'), t('Age'), t('Gender'), t('Actions'));   // estas son las columnas
+  $table = theme('table', array(    // pone un tema un hook, pero en este caso a la tabla
+    'header' => $header, 
+    'rows' => $rows, 
+    'empty' => t('No results found.')
+    )
+  );
+
+
+  $return['wrapper']['table'] = [  // guardo en el indice table del indice wrapper de el array $return una tabla
+    '#markup' => $table
+  ];
+
+  //dpm($return, 'return return');   // en return tenemos un formulario y una tabla y el prefijo y el sufijo que contienen la etiqueta div  donde se renderiza el markup
+
+  return $return;   
+
+}
+
+/**
+ * Implements hook_form().
+ */
+
+/**
+ * Implements hook_validate().
+ */
+//function carlos_form_validate($_POST['name'], &$form_state) {
+  /*
+   *if (isset($node->end) && isset($node->start)) {
+   *  if ($node->start > $node->end) {
+   *    form_set_error('time', t('An event may not end before it starts.'));
+   *  }
+   *}
+   */
+  /* Your code here */
+//}
+/**
+ * Implements hook_form().
+ */
+function carlos_form_form($form, &$form_state) {   // la funcion que vamos a renderizar y se llama en el hook menu
+
+  if (!empty($_POST['name'])) {
+    watchdog('carlos_form', 'Hola !a', array('!a' => $_POST['name']), WATCHDOG_NOTICE);
+  }
+  
+  //dpm($_GET['user_id']);
+  $bool_edit_user = FALSE;   // variable booleana
+  dpm($_POST, 'POST');
+  if (!empty($_GET['user_id'])) {   //condicion para que lo que reciba d user si id esta vacio haga
+
+    $user = db_select('usuarios', 'us')
+     // db_select Returns a new SelectQuery object for the active database, el objeto es la tabla de la bd usuario y su alias
+      ->fields('us')   // con la fucion fields el sabe que campo traer, se puede poner coma arra(nombre de campos a traer)
+      ->condition('id', $_GET['user_id'])  // revisa un campo, el id y lo que recibe de id
+      ->execute()->fetchAssoc();  // trae el nombre del campo en lugar del nombre de id
+    if (empty($user)) {    
+      drupal_goto('/carlos/pagina-custom');  // si la tabla esta vacia en la bd se dirige a la pagina-custom
+    } else {
+      $bool_edit_user = TRUE;
+    }
+  }
+  //se definen los campos del formulario segun los atributos de cada tipo establecidos en la documentacion de drupal https://api.drupal.org/api/drupal/modules!node!node.api.php/function/hook_form/7.x
+  $form['name'] = array(  
+    '#type' => 'textfield',
+    '#title' => t('Ingrese su nombre'),
+    '#default_value' => $bool_edit_user ? $user['name'] : ''
+  );
+    $form['lastname'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Ingrese su apellido'),
+    '#required' => true,
+    '#default_value' => $bool_edit_user ? $user['lastname'] : ''
+  );
+  $form['age'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Ingrese su edad'),
+    '#required' => true,
+    '#default_value' => $bool_edit_user ? $user['age'] : ''
+  );
+  $form['opsex'] = array(
+    '#type' => 'radios',
+    '#title' => t('elija el sexo'),
+    '#options' => array('man' => t('Man'), 'woman' => t('Woman')),
+    '#default_value' => $bool_edit_user ? $user['opsex'] : 'man'  
+  );  
+
+  $form['enviar'] = array(
+    '#type' => 'submit',
+    '#value' => t('Send'),
+  );
+
+  $form['new_account'] = array(
+    '#type' => 'submit',
+    '#value' => t('Create new account'), 
+    '#access' => $bool_edit_user,
+    '#ajax' => array(
+      'callback' => 'carlos_form_ajax',   // este es el llamado a una funcion ajax q se usa en el boton new account
+    ),
+  );
+  
+
+  return $form;
+}
+
+/**
+ * Gets the users.
+ *
+ * @param      array  $users_id  The user identifier
+ *
+ * @return     array  The users.
+ */
+function getUsers ($users_id = array()) {
+  $select = db_select('usuarios', 'us')
+    ->fields('us');
+
+  if (!empty($users_id)) {
+    $select->condition('id', $users_id, 'IN');
+  }
+  $users = $select->execute()->fecthAll();
+
+  return $users;
+}
+
+/**
+ * CAllback del ajax
+ *
+ * @param      array  $form        The form
+ * @param      array  $form_state  The form state
+ *
+ * @return     array  ( description_of_the_return_value )
+ */
+function carlos_form_ajax($form, &$form_state) {
+  drupal_add_library('system', 'drupal.ajax');  //siempre que se quiere usar una funcion ajax se agrega la libreria ajax
+  $commands = array();   // se asigna a la variable $commands una array
+// segundo  @param $method * The jQuery method to invoke.
+// tercero @param $arguments * (optional) A list of arguments to the jQuery $method
+
+  $commands[] = ajax_command_invoke('#edit-name', 'val', array(''));  // vacia el campo nombre 
+  $commands[] = ajax_command_invoke('#edit-lastname', 'val', array('')); // vacia el campo apellido
+  $commands[] = ajax_command_invoke('#edit-age', 'val', array('')); // vacia el campo edad
+  $commands[] = ajax_command_remove('#edit-new-account'); // quita el boton
+
+  return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+/**
+ * Implements hook_form_validate().
+ *
+ * @param      array  $form        The form
+ * @param      array  $form_state  The form state
+ */
+function carlos_form_form_validate($form, &$form_state) {   //validacion de un campo del formulario
+  //una condicion boolean al array $form['valus']['name']
+  if (empty($form_state['values']['name'])) {   
+  // si es nombre esta vacido requiere que se llene
+    form_set_error('name', t('Error, este campo es requerido.')); 
+  }
+  if (!is_numeric($form_state['values']['age'])) {  //condicion para validar numeros
+    form_set_error('age', t('Error, este campo es numerico.')); # code... 
+  }
+  //dpm($form_state, 'Form state en validate');
+
+}
+
+/**
+ * Implements hook_block_info().
+ *
+ * @return     array  ( description_of_the_return_value )
+ */
+function carlos_form_block_info() {   // se crea un bloque y se le da una descripcion
+  $blocks['bloque_custom'] = array(
+    'info' => t('Bloque personalizado de prueba'),
+    'cache' => DRUPAL_NO_CACHE
+  );
+
+  return $blocks;
+}
+
+
+/**
+ * Implements hook_block_view().
+ *
+ * @param      string  $delta  The delta
+ *
+ * @return     array   ( en el array $block en el caso $block['concent'] )
+ */
+function carlos_form_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'bloque_custom':
+      $block['subject'] = '';
+      $block['content'] = array('#markup' => '<p>MUNDOSa</p>');
+      break;
+    
+  }
+  return $block;
+}
+
+
+
+/**
+ * Implements hook_form_submit().
+ *
+ * @param      array  $form        The form
+ * @param      array  $form_state  The form state
+ */
+function carlos_form_form_submit($form, &$form_state) {  //con este hook se envian los campos seleccionados a la bd
+  //dpm($form_state, 'Form state en submit');
+
+  // en la variable $values asignamos el arry $form_state indice values
+  $values = $form_state['values']; 
+  $record = array(
+    'name' => $values['name'],
+    'lastname' => $values['lastname'],
+    'age' => $values['age'],
+    'opsex' => $values['opsex']
+  );
+  //drupal_write_record('usuarios', $record);
+  drupal_set_message(t('The user has been saved successfully.'), 'status');
+}
+

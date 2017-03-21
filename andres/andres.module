@@ -1,0 +1,46 @@
+<?php
+
+
+/**
+ * Implements hook_form_FORM_ID_alter() for carlos_form_form().
+ */
+function andres_form_carlos_form_form_alter(&$form, &$form_state) {
+	  $form['tel'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Ingrese su telefono',
+    '#weight' => 3
+  );
+  $form['name']['#weight'] = 1;
+  $form['lastname']['#weight'] = 2;
+  $form['age']['#weight'] = 4;
+  $form['opsex']['#weight'] = 5;
+  $form['enviar']['#weight'] = 6;
+  $form['new_account']['#weight'] = 7;
+  $form['#validate'][] = 'edilson_new_validate';
+  $form['#submit'][] = 'edilson_new_submit';	
+}
+
+
+/**
+ * { function_description }
+ *
+ * @param      <type>  $form        The form
+ * @param      <type>  $form_state  The form state
+ */
+function edilson_new_validate ($form, &$form_state) {
+    if (empty($form_state['values']['tel'])) {   
+    form_set_error('tel', t('Error, este campo es requerido.')); 
+  }
+}
+
+/**
+ * { function_description }
+ *
+ * @param      <type>  $form        The form
+ * @param      <type>  $form_state  The form state
+ */
+function edilson_new_submit ($form, &$form_state) {
+  dpm('en submit');
+}
+
+

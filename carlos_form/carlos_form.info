@@ -1,0 +1,5 @@
+name = Carlos Form
+description = "Primer formulario"
+package = Custom
+core = 7.x
+version = 1.0.0

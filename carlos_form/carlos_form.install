@@ -1,0 +1,48 @@
+<?php
+
+
+/**
+ * Implements hook_schema().
+ */
+function carlos_form_schema() {
+  $schema['usuarios'] = array(
+    'description' => 'Esta tabla guarda datos de usuarios',
+    'fields' => array(
+      'id' => array(
+        'description' => 'clave primaria',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'name' => array(
+        'description' => 'Escriba su nombre',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'lastname' => array(
+        'description' => 'Escriba su apellido',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'age' => array(
+        'description' => 'Escriba su edad',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'opsex' => array(
+        'description' => 'Escriba su nombre',
+        'type' => 'varchar',
+        'length' => 10, 
+        'not null' => TRUE,        
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+  return $schema;
+}
