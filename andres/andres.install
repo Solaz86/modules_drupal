@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * crear campo telefono para la tabla usuarios
+ */
+function andres_update_7001() {
+	if (db_table_exists('usuarios')) {
+		if (!db_field_exists('usuarios', 'tel')) {
+			$schema = drupal_get_schema_unprocessed('carlos_form', 'usuarios');
+
+			db_add_field('usuarios', 'tel', $schema['fields']['tel']);
+		}
+	}
+}

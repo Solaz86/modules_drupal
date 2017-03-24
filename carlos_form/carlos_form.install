@@ -28,6 +28,13 @@ function carlos_form_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
+      'tel' => array(
+        'description' => 'Escriba su telefono',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'age' => array(
         'description' => 'Escriba su edad',
         'type' => 'varchar',
@@ -39,7 +46,7 @@ function carlos_form_schema() {
         'description' => 'Escriba su nombre',
         'type' => 'varchar',
         'length' => 10, 
-        'not null' => TRUE,        
+        'not null' => TRUE,
       ),
     ),
     'primary key' => array('id'),

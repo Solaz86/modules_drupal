@@ -5,19 +5,26 @@
  * Implements hook_form_FORM_ID_alter() for carlos_form_form().
  */
 function andres_form_carlos_form_form_alter(&$form, &$form_state) {
-	  $form['tel'] = array(
-    '#type' => 'textfield',
-    '#title' => 'Ingrese su telefono',
-    '#weight' => 3
-  );
+	$bool_edit_user = FALSE;   // variable booleana
+  if (!empty($form_state['storage']['user'])) {   //condicion para que lo que reciba d user si id esta vacio haga
+    $tel = $form_state['storage']['user'][0]->tel;
+    $bool_edit_user = TRUE;
+  }
   $form['name']['#weight'] = 1;
   $form['lastname']['#weight'] = 2;
   $form['age']['#weight'] = 4;
   $form['opsex']['#weight'] = 5;
-  $form['enviar']['#weight'] = 6;
-  $form['new_account']['#weight'] = 7;
-  $form['#validate'][] = 'edilson_new_validate';
-  $form['#submit'][] = 'edilson_new_submit';	
+  $form['create']['#weight'] = 6;
+  $form['update']['#weight'] = 7;
+  $form['new_account']['#weight'] = 8;
+  $form['tel'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Ingrese su telefono'),
+    '#default_value' => $bool_edit_user ? $tel : '',
+    '#weight' => 3,
+  );
+  $form['#validate'][] = 'andres_new_validate';
+  $form['#submit'][] = 'andres_new_submit';	
 }
 
 
@@ -27,7 +34,7 @@ function andres_form_carlos_form_form_alter(&$form, &$form_state) {
  * @param      <type>  $form        The form
  * @param      <type>  $form_state  The form state
  */
-function edilson_new_validate ($form, &$form_state) {
+function andres_new_validate ($form, &$form_state) {
     if (empty($form_state['values']['tel'])) {   
     form_set_error('tel', t('Error, este campo es requerido.')); 
   }
@@ -39,8 +46,13 @@ function edilson_new_validate ($form, &$form_state) {
  * @param      <type>  $form        The form
  * @param      <type>  $form_state  The form state
  */
-function edilson_new_submit ($form, &$form_state) {
-  dpm('en submit');
+function andres_new_submit ($form, &$form_state) {
+  /*db_update('usuarios')
+  	->fields([
+  		'tel' => $form_state['values']['tel']
+  	])
+  	->condition('id', $form_state['storage']['last_id'])
+  	->execute();*/
 }
 
 

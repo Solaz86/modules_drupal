@@ -3,3 +3,4 @@ description = "Primer formulario"
 package = Custom
 core = 7.x
 version = 1.0.0
+files[] = views/handlers/carlos_form_views_handler_area_text_custom.inc
